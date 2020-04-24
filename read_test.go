@@ -364,14 +364,14 @@ func TestReadStringIntoUserVar(t *testing.T) {
 	s := &res.UserVar
 	ns := s.Names()
 	if len(ns) != 1 {
-		t.Fatalf("Idxer.Names()=%d; want length 1", ns)
+		t.Fatalf("Idxer.Names()=%v; want length 1", ns)
 	}
 	if n, n0 := s.Idx("name"), s.Idx(ns[0]); n != n0 {
 		t.Fatalf("Idxer.Idx(Idxer.Names()[0])=%q; "+
 			"want same as Idxer.Idx(\"name\")=%q", n0, n)
 	}
 	if v := s.V[res.UserVar.Idx("name")]; *v != "value" {
-		t.Fatalf("V[Idxer.Idx(\"name\")]=%q; want \"value\"", v)
+		t.Fatalf("V[Idxer.Idx(\"name\")]=%v; want \"value\"", v)
 	}
 }
 
@@ -385,7 +385,7 @@ func TestReadStringIntoUserVarMulti(t *testing.T) {
 	s := &res.UserVarM
 	ns := s.Names()
 	if len(ns) != 1 {
-		t.Fatalf("Idxer.Names()=%d; want length 1", ns)
+		t.Fatalf("Idxer.Names()=%v; want length 1", ns)
 	}
 	if n, n0 := s.Idx("name"), s.Idx(ns[0]); n != n0 {
 		t.Fatalf("Idxer.Idx(Idxer.Names()[0])=%q; "+

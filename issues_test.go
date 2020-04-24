@@ -68,31 +68,6 @@ type ConfigIssue11 struct {
 	}
 }
 
-var testsIssue11 = []struct {
-	cfg string
-	loc string
-}{
-	{"[Sect]\nVar=X", "Sect"},
-	{"[Sect]\nVar=X", "Var"},
-}
-
-// Value parse error should include location
-func TestIssue11(t *testing.T) {
-	for i, tt := range testsIssue11 {
-		var c ConfigIssue11
-		err := ReadStringInto(&c, tt.cfg)
-		switch {
-		case err == nil:
-			t.Errorf("%d fail: got ok; wanted error", i)
-		case !strings.Contains(err.Error(), tt.loc):
-			t.Errorf("%d fail: error message doesn't contain location %q: %v",
-				i, tt.loc, err)
-		default:
-			t.Logf("%d pass: %v", i, err)
-		}
-	}
-}
-
 // Escaped double quote should be supported in "raw" string literals
 func TestIssue12(t *testing.T) {
 	var c struct {

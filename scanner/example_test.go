@@ -6,11 +6,9 @@ package scanner_test
 
 import (
 	"fmt"
-)
 
-import (
-	"gopkg.in/gcfg.v1/scanner"
-	"gopkg.in/gcfg.v1/token"
+	"github.com/traetox/gcfg/scanner"
+	"github.com/traetox/gcfg/token"
 )
 
 func ExampleScanner_Scan() {

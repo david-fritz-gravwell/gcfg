@@ -8,10 +8,8 @@ import (
 	"fmt"
 	"io"
 	"sort"
-)
 
-import (
-	"gopkg.in/gcfg.v1/token"
+	"github.com/traetox/gcfg/token"
 )
 
 // In an ErrorList, an error is represented by an *Error.
