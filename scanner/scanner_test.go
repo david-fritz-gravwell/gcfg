@@ -8,10 +8,8 @@ import (
 	"os"
 	"strings"
 	"testing"
-)
 
-import (
-	"gopkg.in/gcfg.v1/token"
+	"github.com/traetox/gcfg/token"
 )
 
 var fset = token.NewFileSet()

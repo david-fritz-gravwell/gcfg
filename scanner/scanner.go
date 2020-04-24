@@ -14,12 +14,11 @@ package scanner
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"unicode"
 	"unicode/utf8"
-)
 
-import (
-	"gopkg.in/gcfg.v1/token"
+	"github.com/traetox/gcfg/token"
 )
 
 // An ErrorHandler may be provided to Scanner.Init. If a syntax error is
@@ -219,6 +218,36 @@ func (s *Scanner) scanValString() string {
 	hasCR := false
 	end := offs
 	inQuote := false
+
+	if s.ch == '`' {
+		// backticks are raw strings, and we unescape and
+		// unquote in several places, so instead we REWRITE the
+		// string as a double quoted string with double escapes
+		// as we see them...
+		var b strings.Builder
+		b.WriteRune('"')
+
+		s.next()
+		ch := s.ch
+		for ch != '`' {
+			if ch < 0 {
+				s.error(offs, "raw string not terminated")
+				return ""
+			}
+
+			if ch == '\\' {
+				b.WriteRune('\\')
+			}
+			b.WriteRune(ch)
+
+			s.next()
+			ch = s.ch
+		}
+		b.WriteRune('"')
+		s.next()
+		return b.String()
+	}
+
 loop:
 	for inQuote || s.ch >= 0 && s.ch != '\n' && s.ch != ';' && s.ch != '#' {
 		ch := s.ch
@@ -253,7 +282,6 @@ loop:
 	if hasCR {
 		lit = stripCR(lit)
 	}
-
 	return string(lit)
 }
 

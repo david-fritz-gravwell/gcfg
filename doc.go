@@ -142,4 +142,4 @@
 //    - make error context accessible programmatically?
 //    - limit input size?
 //
-package gcfg // import "gopkg.in/gcfg.v1"
+package gcfg
