@@ -8,8 +8,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/traetox/gcfg/scanner"
-	"github.com/traetox/gcfg/token"
+	"github.com/gravwell/gcfg/scanner"
+	"github.com/gravwell/gcfg/token"
 	"gopkg.in/warnings.v0"
 )
 

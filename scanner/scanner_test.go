@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/traetox/gcfg/token"
+	"github.com/gravwell/gcfg/token"
 )
 
 var fset = token.NewFileSet()

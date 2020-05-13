@@ -9,7 +9,7 @@ import (
 	"io"
 	"sort"
 
-	"github.com/traetox/gcfg/token"
+	"github.com/gravwell/gcfg/token"
 )
 
 // In an ErrorList, an error is represented by an *Error.

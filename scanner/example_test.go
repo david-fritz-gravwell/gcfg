@@ -7,8 +7,8 @@ package scanner_test
 import (
 	"fmt"
 
-	"github.com/traetox/gcfg/scanner"
-	"github.com/traetox/gcfg/token"
+	"github.com/gravwell/gcfg/scanner"
+	"github.com/gravwell/gcfg/token"
 )
 
 func ExampleScanner_Scan() {

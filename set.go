@@ -11,7 +11,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/traetox/gcfg/types"
+	"github.com/gravwell/gcfg/types"
 	"gopkg.in/warnings.v0"
 )
 
