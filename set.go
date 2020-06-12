@@ -194,15 +194,18 @@ func scanSetter(d interface{}, blank bool, val string, tt tag) error {
 }
 
 func idxFieldFold(v reflect.Value, name string) (reflect.Value, tag) {
-	fIdxer := v.FieldByName("Idxer")
-	if !fIdxer.IsValid() || fIdxer.Type() != reflect.TypeOf(Idxer{}) {
+	fIdxer := v.FieldByName("CasedIdxer")
+	if !fIdxer.IsValid() {
+		if fIdxer = v.FieldByName("Idxer"); !fIdxer.IsValid() {
+			return fieldFold(v, name)
+		}
+	}
+	if fIdxer.Type() != reflect.TypeOf(Idxer{}) && fIdxer.Type() != reflect.TypeOf(CasedIdxer{}) {
 		return fieldFold(v, name)
 	}
-
-	idxer := fIdxer.Addr().Interface().(*Idxer)
 	var f reflect.Value
 	for i := 0; i < v.NumField(); i++ {
-		if v.Type().Field(i).Name == "Idxer" {
+		if n := v.Type().Field(i).Name; n == "Idxer" || n == "CasedIdxer" {
 			continue
 		}
 		if (f != reflect.Value{}) {
@@ -218,10 +221,20 @@ func idxFieldFold(v reflect.Value, name string) (reflect.Value, tag) {
 	if f.IsNil() {
 		f.Set(reflect.MakeMap(f.Type()))
 	}
-	idx := idxer.Idx(name)
-	if (idx == Idx{}) {
-		idxer.add(name)
-		idx = idxer.Idx(name)
+	var idx Idx
+	switch idxer := fIdxer.Addr().Interface().(type) {
+	case *Idxer:
+		if idx = idxer.Idx(name); (idx == Idx{}) {
+			idxer.add(name)
+			idx = idxer.Idx(name)
+		}
+	case *CasedIdxer:
+		if idx = idxer.Idx(name); (idx == Idx{}) {
+			idxer.add(name)
+			idx = idxer.Idx(name)
+		}
+	default:
+		panic(fmt.Sprintf("Unknown type on idxFieldFold: %T", idxer))
 	}
 	vv := f.MapIndex(reflect.ValueOf(idx))
 	if !vv.IsValid() {

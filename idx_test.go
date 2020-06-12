@@ -25,6 +25,20 @@ func TestIdxerIdxCase(t *testing.T) {
 	}
 }
 
+func TestIdxerIdxCaseWithCased(t *testing.T) {
+	tsts := []string{"Hello", "HELLO", "hello"}
+	var idxer CasedIdxer
+	for _, ns := range tsts {
+		if (idxer.Idx(ns) != Idx{}) {
+			t.Fatalf("name %q already exists", ns)
+		}
+		idxer.add(ns)
+		if (idxer.Idx(ns) == Idx{}) {
+			t.Fatalf("name %q missing after add", ns)
+		}
+	}
+}
+
 var idxerNamesTests = [][]string{
 	[]string{},
 	[]string{"a"},

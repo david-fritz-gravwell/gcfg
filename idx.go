@@ -51,3 +51,21 @@ func (i *Idxer) add(n string) {
 	}
 	i.names[n] = struct{}{}
 }
+
+type CasedIdxer struct {
+	Idxer
+}
+
+// Idx returns the Idx for the variable n, matched case-sensitively.
+// In case of no match, the Idx returned is one that does not exist in the map.
+func (i CasedIdxer) Idx(n string) Idx {
+	if i.names == nil {
+		return Idx{}
+	}
+	for in := range i.names {
+		if n == in {
+			return Idx{in}
+		}
+	}
+	return Idx{}
+}
