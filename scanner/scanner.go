@@ -239,10 +239,12 @@ func (s *Scanner) scanValString() string {
 			}
 
 			if ch == '\\' {
-				escapeState = !escapeState
+				escapeState = true
 				b.WriteRune('\\')
 			} else if ch == '"' && !escapeState {
 				b.WriteRune('\\')
+			} else {
+				escapeState = false
 			}
 
 			b.WriteRune(ch)
