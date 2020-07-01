@@ -224,11 +224,14 @@ func (s *Scanner) scanValString() string {
 		// unquote in several places, so instead we REWRITE the
 		// string as a double quoted string with double escapes
 		// as we see them...
+		// We also escape any other double quotes that aren't already
+		// escaped.
 		var b strings.Builder
 		b.WriteRune('"')
 
 		s.next()
 		ch := s.ch
+		var escapeState bool
 		for ch != '`' {
 			if ch < 0 {
 				s.error(offs, "raw string not terminated")
@@ -236,8 +239,12 @@ func (s *Scanner) scanValString() string {
 			}
 
 			if ch == '\\' {
+				escapeState = !escapeState
+				b.WriteRune('\\')
+			} else if ch == '"' && !escapeState {
 				b.WriteRune('\\')
 			}
+
 			b.WriteRune(ch)
 
 			s.next()

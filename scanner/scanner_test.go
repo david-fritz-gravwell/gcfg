@@ -252,6 +252,66 @@ func TestScanValStringEOF(t *testing.T) {
 	}
 }
 
+func TestScanValStringQuote(t *testing.T) {
+	var s Scanner
+	src := "= \"value\""
+	f := fset.AddFile("src", fset.Base(), len(src))
+	s.Init(f, []byte(src), nil, 0)
+	s.Scan()              // =
+	_, _, lit := s.Scan() // value
+	if lit != `"value"` {
+		t.Errorf("bad literal: got %s, expected %s", lit, `"value"`)
+	}
+	if s.ErrorCount > 0 {
+		t.Error("scanning error")
+	}
+}
+
+func TestScanValStringBacktickWonkyQuotesDoubleEscaped(t *testing.T) {
+	var s Scanner
+	src := "= `v\"a\"\\\"lue`"
+	f := fset.AddFile("src", fset.Base(), len(src))
+	s.Init(f, []byte(src), nil, 0)
+	s.Scan()              // =
+	_, _, lit := s.Scan() // value
+	if lit != `"v\"a\"\\"lue"` {
+		t.Errorf("bad literal: got %s, expected %s", lit, `"v\"a\"\\"lue"`)
+	}
+	if s.ErrorCount > 0 {
+		t.Error("scanning error")
+	}
+}
+
+func TestScanValStringBacktickWonkyQuotes(t *testing.T) {
+	var s Scanner
+	src := "= `v\"a\"\"lue`"
+	f := fset.AddFile("src", fset.Base(), len(src))
+	s.Init(f, []byte(src), nil, 0)
+	s.Scan()              // =
+	_, _, lit := s.Scan() // value
+	if lit != `"v\"a\"\"lue"` {
+		t.Errorf("bad literal: got %s, expected %s", lit, `"v\"a\"\"lue"`)
+	}
+	if s.ErrorCount > 0 {
+		t.Error("scanning error")
+	}
+}
+
+func TestScanValStringBacktick(t *testing.T) {
+	var s Scanner
+	src := "= `value`"
+	f := fset.AddFile("src", fset.Base(), len(src))
+	s.Init(f, []byte(src), nil, 0)
+	s.Scan()              // =
+	_, _, lit := s.Scan() // value
+	if lit != `"value"` {
+		t.Errorf("bad literal: got %s, expected %s", lit, `"value"`)
+	}
+	if s.ErrorCount > 0 {
+		t.Error("scanning error")
+	}
+}
+
 // Verify that initializing the same scanner more then once works correctly.
 func TestInit(t *testing.T) {
 	var s Scanner
