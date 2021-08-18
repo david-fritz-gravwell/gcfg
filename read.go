@@ -124,7 +124,12 @@ func readIntoPass(c *warnings.Collector, config interface{}, fset *token.FileSet
 			// If a section/subsection header was found, ensure a
 			// container object is created, even if there are no
 			// variables further down.
-			err := c.Collect(set(c, config, sect, sectsub, "", true, "", subsectPass))
+
+			err := set(c, config, sect, sectsub, "", true, "", subsectPass)
+			if err != nil {
+				err = errfn(err.Error())
+			}
+			err = c.Collect(err)
 			if err != nil {
 				return err
 			}
@@ -172,7 +177,7 @@ func readIntoPass(c *warnings.Collector, config interface{}, fset *token.FileSet
 			}
 			err := set(c, config, sect, sectsub, n, blank, v, subsectPass)
 			if err != nil {
-				return err
+				return errfn(err.Error())
 			}
 		default:
 			if sect == "" {
