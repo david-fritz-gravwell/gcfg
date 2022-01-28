@@ -15,7 +15,8 @@ func FatalOnly(err error) error {
 }
 
 func isFatal(err error) bool {
-	return true
+	_, ok := err.(extraData)
+	return !ok
 }
 
 type loc struct {
