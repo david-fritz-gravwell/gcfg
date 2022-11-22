@@ -1,6 +1,8 @@
 package gcfg
 
 import (
+	"fmt"
+
 	warnings "gopkg.in/warnings.v0"
 )
 
@@ -51,7 +53,7 @@ func (e extraData) Error() string {
 	if e.name == `` {
 		return "can't store data at " + e.loc.String()
 	}
-	return "can't store data into key " + e.name + " at " + e.loc.String()
+	return fmt.Sprintf("can't store data into key %q at %s", e.name, e.loc.String())
 }
 
 func (e locErr) Error() string {
