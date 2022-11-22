@@ -278,7 +278,7 @@ func set(c *warnings.Collector, cfg interface{}, sect, sub, name string,
 	vSect, _ := fieldFold(vCfg, sect)
 	l := loc{section: sect}
 	if !vSect.IsValid() {
-		err := extraData{loc: l}
+		err := extraData{loc: l, name: name}
 		return c.Collect(err)
 	}
 	isSubsect := vSect.Kind() == reflect.Map
@@ -313,7 +313,7 @@ func set(c *warnings.Collector, cfg interface{}, sect, sub, name string,
 		panic(fmt.Errorf("field for section must be a map or a struct: "+
 			"section %q", sect))
 	} else if sub != "" {
-		return c.Collect(extraData{loc: l})
+		return c.Collect(extraData{loc: l, name: name})
 	}
 	// Empty name is a special value, meaning that only the
 	// section/subsection object is to be created, with no values set.
@@ -322,7 +322,7 @@ func set(c *warnings.Collector, cfg interface{}, sect, sub, name string,
 	}
 	vVar, t := idxFieldFold(vSect, name)
 	if !vVar.IsValid() {
-		return c.Collect(extraData{loc: l})
+		return c.Collect(extraData{loc: l, name: name})
 	}
 	// vVal is either single-valued var, or newly allocated value within multi-valued var
 	var vVal reflect.Value
