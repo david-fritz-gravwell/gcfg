@@ -312,6 +312,21 @@ func TestScanValStringBacktick(t *testing.T) {
 	}
 }
 
+func TestScanValStringGolangEscapes(t *testing.T) {
+	var s Scanner
+	src := `= "\u65e5\u672c\u8a9e"`
+	f := fset.AddFile("src", fset.Base(), len(src))
+	s.Init(f, []byte(src), nil, 0)
+	s.Scan()              // =
+	_, _, lit := s.Scan() // value
+	if lit != `日本語` {
+		t.Errorf("bad literal: got %s, expected %s", lit, `日本語`)
+	}
+	if s.ErrorCount > 0 {
+		t.Error("scanning error")
+	}
+}
+
 // Verify that initializing the same scanner more then once works correctly.
 func TestInit(t *testing.T) {
 	var s Scanner

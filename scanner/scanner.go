@@ -12,8 +12,10 @@
 package scanner
 
 import (
+	"bytes"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -291,7 +293,12 @@ loop:
 	if hasCR {
 		lit = stripCR(lit)
 	}
-	return string(lit)
+	l, err := unescapeString(string(lit))
+	if err != nil {
+		s.error(offs, err.Error())
+		return ""
+	}
+	return l
 }
 
 func isWhiteSpace(ch rune) bool {
@@ -375,5 +382,158 @@ scanAgain:
 		}
 	}
 
+	return
+}
+
+func unescapeString(s string) (string, error) {
+	r, err := unescapeBytes([]byte(s))
+	if err != nil {
+		return "", err
+	}
+	return string(r), nil
+}
+
+func unescapeBytes(s []byte) ([]byte, error) {
+	// short circuit if there are no escaped characters
+	if !bytes.ContainsRune(s, '\\') {
+		return s, nil
+	}
+
+	buf := make([]byte, 0, len(s)) // try to avoid more allocations
+
+	in := s
+
+	for len(in) > 0 {
+		// Process the next character,
+		r, multibyte, rem, err := unescapeChar(in)
+		if err != nil {
+			return nil, err
+		}
+		in = rem
+
+		if r < utf8.RuneSelf || !multibyte {
+			buf = append(buf, byte(r))
+		} else {
+			var arr [utf8.UTFMax]byte
+			n := utf8.EncodeRune(arr[:], r)
+			buf = append(buf, arr[:n]...)
+		}
+	}
+
+	return buf, nil
+}
+
+// Adapted from golang strconv.UnquoteChar() - https://cs.opensource.google/go/go/+/refs/tags/go1.19.4:src/strconv/quote.go;l=262
+func unescapeChar(s []byte) (value rune, multibyte bool, tail []byte, err error) {
+	// easy cases
+	if len(s) == 0 {
+		err = strconv.ErrSyntax
+		return
+	}
+	switch c := s[0]; {
+	case c >= utf8.RuneSelf:
+		r, size := utf8.DecodeRune(s)
+		return r, true, s[size:], nil
+	case c != '\\':
+		return rune(s[0]), false, s[1:], nil
+	}
+
+	// hard case: c is backslash
+	if len(s) <= 1 {
+		err = strconv.ErrSyntax
+		return
+	}
+	c := s[1]
+	s = s[2:]
+
+	switch c {
+	case 'a':
+		value = '\a'
+	case 'b':
+		value = '\b'
+	case 'f':
+		value = '\f'
+	case 'n':
+		value = '\n'
+	case 'r':
+		value = '\r'
+	case 't':
+		value = '\t'
+	case 'v':
+		value = '\v'
+	case 'x', 'u', 'U':
+		n := 0
+		switch c {
+		case 'x':
+			n = 2
+		case 'u':
+			n = 4
+		case 'U':
+			n = 8
+		}
+		var v rune
+		if len(s) < n {
+			err = strconv.ErrSyntax
+			return
+		}
+		for j := 0; j < n; j++ {
+			x, ok := unhex(s[j])
+			if !ok {
+				err = strconv.ErrSyntax
+				return
+			}
+			v = v<<4 | x
+		}
+		s = s[n:]
+		if c == 'x' {
+			// single-byte string, possibly not UTF-8
+			value = v
+			break
+		}
+		if v > utf8.MaxRune {
+			err = strconv.ErrSyntax
+			return
+		}
+		value = v
+		multibyte = true
+	case '0', '1', '2', '3', '4', '5', '6', '7':
+		v := rune(c) - '0'
+		if len(s) < 2 {
+			err = strconv.ErrSyntax
+			return
+		}
+		for j := 0; j < 2; j++ { // one digit already; two more
+			x := rune(s[j]) - '0'
+			if x < 0 || x > 7 {
+				err = strconv.ErrSyntax
+				return
+			}
+			v = (v << 3) | x
+		}
+		s = s[2:]
+		if v > 255 {
+			err = strconv.ErrSyntax
+			return
+		}
+		value = v
+	case '\\':
+		value = '\\'
+	default:
+		value = rune(c)
+	}
+	tail = s
+	return
+}
+
+func unhex(b byte) (v rune, ok bool) {
+	c := rune(b)
+	switch {
+	case '0' <= c && c <= '9':
+		return c - '0', true
+	case 'a' <= c && c <= 'f':
+		return c - 'a' + 10, true
+	case 'A' <= c && c <= 'F':
+		return c - 'A' + 10, true
+	}
 	return
 }
